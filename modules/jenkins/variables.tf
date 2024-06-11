@@ -1,4 +1,4 @@
-# ./modules/ec2/variables.tf
+# # ./modules/ec2/variables.tf
 
 variable "name_prefix" {
   description = "리소스 이름 접두사"
@@ -67,22 +67,4 @@ variable "tags" {
 variable "availability_zone" {
   description = "AZ"
   type        = string
-}
-
-variable "app_instance_count" {
-  description = "생성할 앱 서버 EC2 인스턴스 수"
-  type        = number
-  default     = 1
-}
-
-variable "web_instance_count" {
-  description = "생성할 웹 서버 EC2 인스턴스 수"
-  type        = number
-  default     = 1
-}
-
-variable "iam_instance_profile" {
-  description = "인스턴스 프로파일 IAM 역할 이름"
-  type        = string
-  default     = ""
 }
