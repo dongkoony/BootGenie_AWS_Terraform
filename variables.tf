@@ -8,7 +8,7 @@ variable "region" {
 variable "vpc_name" {
   description = "VPC 이름"
   type        = string
-  default     = "my-vpc"
+  default     = "BootGenie-vpc"
 }
 
 variable "vpc_cidr" {
@@ -35,7 +35,7 @@ variable "private_subnet_cidrs" {
 variable "name_prefix" {
   description = "리소스 이름 접두사"
   type        = string
-  default     = "my-app"
+  default     = "BootGenie"
 }
 
 variable "ami" {
@@ -86,6 +86,19 @@ variable "ingress_rules" {
       to_port     = 22
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+
+    {
+      from_port   = 1717
+      to_port     = 1717
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   ]
 }
@@ -93,7 +106,6 @@ variable "ingress_rules" {
 variable "key_name" {
   description = "키페어 이름"
   type        = string
-  default     = "my-key-pair"
 }
 
 variable "root_volume_size" {
@@ -112,12 +124,6 @@ variable "tags" {
   description = "리소스에 적용할 태그"
   type        = map(string)
   default     = {}
-}
-
-variable "availability_zone" {
-  description = "AZ"
-  type        = string
-  default     = "ap-northeast-2a"
 }
 
 variable "app_instance_count" {
@@ -142,3 +148,9 @@ variable "iam_instance_profile" {
   type        = string
   default     = ""
 }
+
+variable "public_key_path" {
+  description = "퍼블릭 키 파일 경로"
+  type        = string
+}
+

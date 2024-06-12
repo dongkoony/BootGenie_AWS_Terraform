@@ -68,3 +68,8 @@ variable "availability_zone" {
   description = "AZ"
   type        = string
 }
+
+variable "public_key_path" {
+  description = "퍼블릭 키 파일 경로"
+  type        = string
+}

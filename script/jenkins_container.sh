@@ -24,3 +24,4 @@ docker run -d \
     --name jenkins \
     -v jenkins-data:/var/jenkins_home \
     jenkins/jenkins:lts
+

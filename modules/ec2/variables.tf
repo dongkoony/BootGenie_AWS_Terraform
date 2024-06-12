@@ -17,7 +17,7 @@ variable "instance_type" {
 
 variable "subnet_id" {
   description = "인스턴스를 생성할 서브넷 ID"
-  type        = string
+  type        = list(string)
 }
 
 variable "associate_public_ip_address" {
@@ -64,10 +64,10 @@ variable "tags" {
   default     = {}
 }
 
-variable "availability_zone" {
-  description = "AZ"
-  type        = string
-}
+# variable "availability_zone" {
+#   description = "AZ"
+#   type        = string
+# }
 
 variable "app_instance_count" {
   description = "생성할 앱 서버 EC2 인스턴스 수"
@@ -85,4 +85,9 @@ variable "iam_instance_profile" {
   description = "인스턴스 프로파일 IAM 역할 이름"
   type        = string
   default     = ""
+}
+
+variable "availability_zones" {
+  description = "가용 영역 목록"
+  type        = list(string)
 }

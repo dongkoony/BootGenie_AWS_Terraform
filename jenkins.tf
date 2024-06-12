@@ -35,7 +35,7 @@ module "jenkins_master" {
   subnet_id   = element(module.vpc.public_subnet_ids, 0)
   associate_public_ip_address = true
   vpc_id      = module.vpc.vpc_id
-  availability_zone = "ap-northeast-2d"
+  availability_zone  = "ap-northeast-2b"
 
   ingress_rules = [
     {
@@ -58,9 +58,10 @@ module "jenkins_master" {
     }
   ]
 	
-	key_name = "donghyeon"
+  key_name        = var.key_name
+  public_key_path = var.public_key_path
   user_data     = file("script/jenkins_container.sh")
   tags = {
-    Name = "Jenkins-Master"
+    Name = "Jenkins-Master-instance"
   }
 }

@@ -17,7 +17,7 @@ module "vpc" {
 module "ec2" {
   source = "./modules/ec2"
 
-  count  = length(var.availability_zones)
+  # count  = length(var.availability_zones)
 
   name_prefix                 = var.name_prefix
   ami                         = var.ami
@@ -30,8 +30,8 @@ module "ec2" {
   root_volume_size            = var.root_volume_size
   tags                        = var.tags
 
-  availability_zone           = var.availability_zones[count.index]
-  subnet_id                   = module.vpc.public_subnet_ids[count.index]
+  availability_zones          = var.availability_zones
+  subnet_id                   = module.vpc.public_subnet_ids
 
   app_instance_count          = var.app_instance_count
   web_instance_count          = var.web_instance_count

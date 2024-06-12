@@ -1,10 +1,15 @@
 # ./modules/ec2/main.tf
 
+locals {
+  app_instances = { for i in range(var.app_instance_count) : "app_${i}" => { name = "${var.name_prefix}-APP-Instance-#${i + 1}" } }
+  web_instances = { for i in range(var.web_instance_count) : "web_${i}" => { name = "${var.name_prefix}-WEB-Instance-#${i + 1}" } }
+}
+
 resource "aws_instance" "app" {
   count                    = var.app_instance_count
   ami                      = var.ami
   instance_type            = var.instance_type
-  subnet_id                = var.subnet_id
+  subnet_id                   = var.subnet_id[count.index % length(var.subnet_id)]
   associate_public_ip_address = var.associate_public_ip_address
   vpc_security_group_ids   = [aws_security_group.instance_sg.id]
   key_name                 = var.key_name
@@ -14,26 +19,26 @@ resource "aws_instance" "app" {
   root_block_device {
     volume_size = var.root_volume_size
   }
-
-  tags = merge(var.tags, { Name = "${var.name_prefix}-app-instance-${count.index}" })
+  # tags = merge(var.tags, { Name = "${var.name_prefix}-APP-Instance-${var.availability_zones[count.index % length(var.availability_zones)]}-#${count.index + 1}" })
+    tags = merge(var.tags, { Name = "${var.name_prefix}-APP-Instance-#${count.index + 1}" })
 }
 
 resource "aws_instance" "web" {
   count                    = var.web_instance_count
   ami                      = var.ami
   instance_type            = var.instance_type
-  subnet_id                = var.subnet_id
+  subnet_id                   = var.subnet_id[count.index % length(var.subnet_id)]
   associate_public_ip_address = var.associate_public_ip_address
   vpc_security_group_ids   = [aws_security_group.instance_sg.id]
   key_name                 = var.key_name
-  user_data                = var.user_data
+  user_data                = file("${path.module}/../..//script/change_ssh_port.sh")
   iam_instance_profile     = var.iam_instance_profile
 
   root_block_device {
     volume_size = var.root_volume_size
   }
-
-  tags = merge(var.tags, { Name = "${var.name_prefix}-web-instance-${count.index}" })
+  # tags = merge(var.tags, { Name = "${var.name_prefix}-WEB-Instance-${var.availability_zones[count.index % length(var.availability_zones)]}-#${count.index + 1}" })
+  tags = merge(var.tags, { Name = "${var.name_prefix}-WEB-Instance-#${count.index + 1}" })
 }
 
 resource "aws_security_group" "instance_sg" {
@@ -60,8 +65,6 @@ resource "aws_security_group" "instance_sg" {
   tags = var.tags
 }
 
-
-# SSM IAM 사용자 추가
 resource "random_string" "suffix" {
   length  = 6
   special = false
