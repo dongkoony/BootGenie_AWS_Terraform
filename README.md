@@ -12,6 +12,8 @@
 - Route 53
 - WAF (Web Application Firewall)
 
+![aws_boot_genie](https://github.com/dongkoony/BootGenie_AWS_Terraform/assets/109497684/6ec604bc-19a8-4711-87ed-da40def5669a)
+
 
 ## 주요 기능
 
