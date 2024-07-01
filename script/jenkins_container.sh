@@ -30,7 +30,7 @@ newgrp docker
 
 # Jenkins 컨테이너 실행
 docker run -d \
-    -p 8080:8080 \
+    -p 8082:8080 \
     --name jenkins \
     -v jenkins-data:/var/jenkins_home \
     jenkins/jenkins:lts
