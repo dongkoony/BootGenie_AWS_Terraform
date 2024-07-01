@@ -8,9 +8,10 @@
 
 - VPC (Virtual Private Cloud)
 - EC2 (Elastic Compute Cloud)
-- ELB (Elastic Load Balancer)
+- ALB (Application Load Balancer)
 - Route 53
 - WAF (Web Application Firewall)
+
 
 ## 주요 기능
 
