@@ -29,8 +29,8 @@ resource "aws_autoscaling_group" "app" {
   name                = "${var.name_prefix}-app-asg"
   vpc_zone_identifier = var.subnet_id
   desired_capacity    = var.app_instance_count
-  min_size            = var.app_instance_count
-  max_size            = 6
+  min_size            = var.app_asg_min_siz
+  max_size            = var.app_asg_max_siz
 
   launch_template {
     id      = aws_launch_template.app.id
@@ -68,8 +68,8 @@ resource "aws_autoscaling_group" "web" {
   name                = "${var.name_prefix}-web-asg"
   vpc_zone_identifier = var.subnet_id
   desired_capacity    = var.web_instance_count
-  min_size            = var.web_instance_count
-  max_size            = 6
+  min_size            = var.web_asg_min_siz
+  max_size            = var.web_asg_max_siz
 
   launch_template {
     id      = aws_launch_template.web.id
@@ -108,7 +108,7 @@ resource "aws_security_group" "instance_sg" {
 }
 
 resource "random_string" "suffix" {
-  length  = 6
+  length  = var.web_asg_max_siz
   special = false
   upper   = false
 }
