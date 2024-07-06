@@ -38,7 +38,7 @@ if ! docker info | grep -q "Swarm: active"; then
 else
     echo "Docker Swarm is already active"
 fi
-
+d
 # Jenkins 서비스 생성
 docker service create \
     --name jenkins \
