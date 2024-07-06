@@ -1,36 +1,50 @@
 # ./modules/ec2/main.tf
 
-locals {
-  app_instances = { for i in range(var.app_instance_count) : "app_${i}" => { name = "${var.name_prefix}-APP-Instance-#${i + 1}" } }
-  web_instances = { for i in range(var.web_instance_count) : "web_${i}" => { name = "${var.name_prefix}-WEB-Instance-#${i + 1}" } }
-}
+# locals {
+#   app_instances = { for i in range(var.app_instance_count) : "app_${i}" => { name = "${var.name_prefix}-APP-Instance-#${i + 1}" } }
+#   web_instances = { for i in range(var.web_instance_count) : "web_${i}" => { name = "${var.name_prefix}-WEB-Instance-#${i + 1}" } }
+# }
 
 # Launch Template for App Servers
-resource "aws_instance" "app" {
-  count                    = var.app_instance_count
-  ami                      = var.ami
-  instance_type            = var.instance_type
-  subnet_id                   = var.subnet_id[count.index % length(var.subnet_id)]
-  associate_public_ip_address = var.associate_public_ip_address
-  vpc_security_group_ids   = [aws_security_group.instance_sg.id]
-  key_name                 = var.key_name
-  user_data                = file("${path.module}/../../script/app_instance_docker.sh")
-  iam_instance_profile     = var.iam_instance_profile
+resource "aws_launch_template" "app" {
+  name_prefix   = "${var.name_prefix}-app-"
+  image_id      = var.ami
+  instance_type = var.instance_type
+  key_name      = var.key_name
 
-  root_block_device {
-    volume_size = var.root_volume_size
+  user_data = base64encode(file("${path.module}/../../script/app_instance_docker.sh"))
+
+  iam_instance_profile {
+    name = var.iam_instance_profile
   }
-  # tags = merge(var.tags, { Name = "${var.name_prefix}-APP-Instance-${var.availability_zones[count.index % length(var.availability_zones)]}-#${count.index + 1}" })
-    tags = merge(var.tags, { Name = "${var.name_prefix}-APP-Instance-#${count.index + 1}" })
+
+  network_interfaces {
+    associate_public_ip_address = var.associate_public_ip_address
+    security_groups             = [aws_security_group.instance_sg.id]
+  }
+
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size = var.root_volume_size
+    }
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(var.tags, {
+      Name = "${var.name_prefix}-APP-Instance"
+    })
+  }
 }
 
 # Auto Scaling Group for App Servers
 resource "aws_autoscaling_group" "app" {
   name                = "${var.name_prefix}-app-asg"
   vpc_zone_identifier = var.subnet_id
-  desired_capacity    = var.app_instance_count
-  min_size            = var.app_asg_min_siz
-  max_size            = var.app_asg_max_siz
+  desired_capacity    = var.app_instance_count # 시작 시 원하는 인스턴스 수
+  min_size            = var.app_asg_min_siz # 최소 인스턴스 수
+  max_size            = var.app_asg_max_siz # 최대 인스턴스 수
 
   launch_template {
     id      = aws_launch_template.app.id
@@ -45,22 +59,36 @@ resource "aws_autoscaling_group" "app" {
 }
 
 # Launch Template for Web Servers
-resource "aws_instance" "web" {
-  count                    = var.web_instance_count
-  ami                      = var.ami
-  instance_type            = var.instance_type
-  subnet_id                   = var.subnet_id[count.index % length(var.subnet_id)]
-  associate_public_ip_address = var.associate_public_ip_address
-  vpc_security_group_ids   = [aws_security_group.instance_sg.id]
-  key_name                 = var.key_name
-  user_data                = file("${path.module}/../..//script/change_ssh_port.sh")
-  iam_instance_profile     = var.iam_instance_profile
+resource "aws_launch_template" "web" {
+  name_prefix   = "${var.name_prefix}-web-"
+  image_id      = var.ami
+  instance_type = var.instance_type
+  key_name      = var.key_name
 
-  root_block_device {
-    volume_size = var.root_volume_size
+  user_data = base64encode(file("${path.module}/../..//script/change_ssh_port.sh"))
+
+  iam_instance_profile {
+    name = var.iam_instance_profile
   }
-  # tags = merge(var.tags, { Name = "${var.name_prefix}-WEB-Instance-${var.availability_zones[count.index % length(var.availability_zones)]}-#${count.index + 1}" })
-  tags = merge(var.tags, { Name = "${var.name_prefix}-WEB-Instance-#${count.index + 1}" })
+
+  network_interfaces {
+    associate_public_ip_address = var.associate_public_ip_address
+    security_groups             = [aws_security_group.instance_sg.id]
+  }
+
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size = var.root_volume_size
+    }
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(var.tags, {
+      Name = "${var.name_prefix}-WEB-Instance"
+    })
+  }
 }
 
 # Auto Scaling Group for Web Servers
