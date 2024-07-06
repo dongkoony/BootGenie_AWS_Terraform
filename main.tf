@@ -64,18 +64,18 @@ resource "aws_iam_instance_profile" "ssm_profile" {
   role = aws_iam_role.ssm_role.name
 }
 
-module "elb" {
-  source = "./modules/elb"
+# module "elb" {
+#   source = "./modules/elb"
   
-  vpc_id = module.vpc.vpc_id
-  public_subnet_ids = module.vpc.public_subnet_ids
-  web_instance_ids = module.ec2.web_instance_ids
-}
+#   vpc_id = module.vpc.vpc_id
+#   public_subnet_ids = module.vpc.public_subnet_ids
+#   web_instance_ids = module.ec2.web_instance_ids
+# }
 
-module "route53" {
-  source = "./modules/route53"
+# module "route53" {
+#   source = "./modules/route53"
   
-  domain_name = var.domain_name
-  elb_dns_name = module.elb.elb_dns_name
-  elb_zone_id = module.elb.elb_zone_id
-}
+#   domain_name = var.domain_name
+#   elb_dns_name = module.elb.elb_dns_name
+#   elb_zone_id = module.elb.elb_zone_id
+# }

@@ -39,8 +39,8 @@ module "jenkins_master" {
 
   ingress_rules = [
     {
-      from_port   = 8080
-      to_port     = 8080
+      from_port   = 11117
+      to_port     = 11117
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"] # 모든 IP에서 접근 허용
     },

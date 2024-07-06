@@ -67,6 +67,7 @@ variable "tags" {
 variable "availability_zone" {
   description = "AZ"
   type        = string
+  default     = "ap-northeast-2"
 }
 
 variable "public_key_path" {

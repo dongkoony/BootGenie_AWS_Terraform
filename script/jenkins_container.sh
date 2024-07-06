@@ -8,7 +8,10 @@ systemctl restart sshd
 
 # 방화벽 설정 (필요한 경우)
 ufw allow 1717/tcp
+# Jenkins
+ufw allow 11117/tcp
 
+ufw reload
 
 # Docker 설치
 apt-get update
