@@ -7,13 +7,15 @@ sed -i 's/#Port 22/Port 1717/g' /etc/ssh/sshd_config
 systemctl restart sshd
 
 # 방화벽 설정 (필요한 경우)
-ufw allow 1717/tcp
-# Jenkins
-ufw allow 11117/tcp
-
+ufw allow 1717/tcp  # ssh
+ufw allow 11117/tcp # jenkins
+ufw allow 2377/tcp  # Docker Swarm 클러스터 관리
+ufw allow 7946/tcp  # Docker Swarm 노드 간 통신
+ufw allow 7946/udp  # Docker Swarm 노드 간 통신
+ufw allow 4789/udp  # Docker Swarm 오버레이 네트워크
 ufw reload
 
-# Docker 설치
+# Docker 설치 (이전과 동일)
 apt-get update
 apt-get install -y ca-certificates curl gnupg lsb-release
 
@@ -31,10 +33,12 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 usermod -aG docker ubuntu
 newgrp docker
 
-# Jenkins 컨테이너 실행
-docker run -d \
-    -p 8082:8080 \
-    --name jenkins \
-    -v jenkins-data:/var/jenkins_home \
-    jenkins/jenkins:lts
+# Docker Swarm 초기화 (첫 번째 노드에서만 실행)
+docker swarm init
 
+# Jenkins 서비스 생성
+docker service create \
+    --name jenkins \
+    --publish 11117:8080 \
+    --mount type=volume,source=jenkins-data,target=/var/jenkins_home \
+    jenkins/jenkins:lts
