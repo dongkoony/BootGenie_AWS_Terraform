@@ -91,3 +91,27 @@ variable "availability_zones" {
   description = "가용 영역 목록"
   type        = list(string)
 }
+
+variable "app_asg_max_siz" {
+  description = "asg_max_siz"
+  type        = number
+  default     = 4
+}
+
+variable "web_asg_max_siz" {
+  description = "asg_max_siz"
+  type        = number
+  default     = 4
+}
+
+variable "app_asg_min_siz" {
+  description = "asg_min_siz"
+  type        = number
+  default     = 1
+}
+
+variable "web_asg_min_siz" {
+  description = "asg_min_siz"
+  type        = number
+  default     = 1
+}
