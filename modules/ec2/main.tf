@@ -5,6 +5,7 @@ locals {
   web_instances = { for i in range(var.web_instance_count) : "web_${i}" => { name = "${var.name_prefix}-WEB-Instance-#${i + 1}" } }
 }
 
+# Launch Template for App Servers
 resource "aws_instance" "app" {
   count                    = var.app_instance_count
   ami                      = var.ami
@@ -23,6 +24,27 @@ resource "aws_instance" "app" {
     tags = merge(var.tags, { Name = "${var.name_prefix}-APP-Instance-#${count.index + 1}" })
 }
 
+# Auto Scaling Group for App Servers
+resource "aws_autoscaling_group" "app" {
+  name                = "${var.name_prefix}-app-asg"
+  vpc_zone_identifier = var.subnet_id
+  desired_capacity    = var.app_instance_count
+  min_size            = var.app_instance_count
+  max_size            = 6
+
+  launch_template {
+    id      = aws_launch_template.app.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "${var.name_prefix}-APP-Instance"
+    propagate_at_launch = true
+  }
+}
+
+# Launch Template for Web Servers
 resource "aws_instance" "web" {
   count                    = var.web_instance_count
   ami                      = var.ami
@@ -39,6 +61,26 @@ resource "aws_instance" "web" {
   }
   # tags = merge(var.tags, { Name = "${var.name_prefix}-WEB-Instance-${var.availability_zones[count.index % length(var.availability_zones)]}-#${count.index + 1}" })
   tags = merge(var.tags, { Name = "${var.name_prefix}-WEB-Instance-#${count.index + 1}" })
+}
+
+# Auto Scaling Group for Web Servers
+resource "aws_autoscaling_group" "web" {
+  name                = "${var.name_prefix}-web-asg"
+  vpc_zone_identifier = var.subnet_id
+  desired_capacity    = var.web_instance_count
+  min_size            = var.web_instance_count
+  max_size            = 6
+
+  launch_template {
+    id      = aws_launch_template.web.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "${var.name_prefix}-WEB-Instance"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_security_group" "instance_sg" {
