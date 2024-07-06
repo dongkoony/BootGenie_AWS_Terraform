@@ -1,6 +1,8 @@
+# ./modules/wafv2/variables.tf
+
 variable "waf_prefix" {
   type    = string
-  default = "example-cloudfront" # WAF prefix 이름 설정
+  default = "Boot-Genie-cloudfront" # WAF prefix 이름 설정
 }
 
 variable "waf_ip_sets" {
@@ -59,4 +61,23 @@ variable "managed_rules" {
       excluded_rules  = []
     }
   ]
+}
+
+
+variable "domain_name" {
+  description = "실제 오리진 도메인"
+  type        = string
+  default     = "value"
+}
+
+variable "origin_id" {
+  description = "origin_id"
+  type        = string    
+  default     = "value"
+}
+
+variable "target_origin_id" {
+  description = "target_origin_id"
+  type        = string
+  default     = "value"
 }

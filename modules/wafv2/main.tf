@@ -1,3 +1,5 @@
+# ./modules/wafv2/main.tf
+
 # 허용된 IP 세트 정의
 resource "aws_wafv2_ip_set" "ipset_global" {
   name               = "${var.waf_prefix}-allowed-ips"
@@ -84,8 +86,8 @@ resource "aws_wafv2_web_acl_logging_configuration" "logging_configuration" {
 # CloudFront 배포 설정
 resource "aws_cloudfront_distribution" "cf_distribution" {
   origin {
-    domain_name = "your-origin-domain.com" # 실제 오리진 도메인으로 변경
-    origin_id   = "your-origin-id"
+    domain_name = var.domain_name # 실제 오리진 도메인으로 변경
+    origin_id   = var.origin_id
   }
 
   enabled = true
@@ -93,7 +95,7 @@ resource "aws_cloudfront_distribution" "cf_distribution" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "your-origin-id"
+    target_origin_id = var.target_origin_id
 
     forwarded_values {
       query_string = false
