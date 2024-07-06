@@ -64,6 +64,61 @@ resource "aws_iam_instance_profile" "ssm_profile" {
   role = aws_iam_role.ssm_role.name
 }
 
+module "waf" {
+  source = "./modules/wafv2"
+
+  waf_prefix      = var.waf_prefix
+  waf_ip_sets     = var.waf_ip_sets
+  managed_rules   = var.managed_rules
+  domain_name     = var.origin_domain_name
+  origin_id       = var.origin_id
+  target_origin_id = var.target_origin_id
+}
+
+resource "aws_cloudfront_distribution" "cf_distribution" {
+  origin {
+    domain_name = var.origin_domain_name
+    origin_id   = var.origin_id
+  }
+
+  enabled = true
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = var.target_origin_id
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "allow-all"
+    min_ttl                = 0
+    default_ttl            = 86400
+    max_ttl                = 31536000
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+
+  web_acl_id = module.waf.waf_acl_id
+
+  tags = {
+    Environment = "Production"
+    Project     = "BootGenie"
+  }
+}
+
 # module "elb" {
 #   source = "./modules/elb"
   
