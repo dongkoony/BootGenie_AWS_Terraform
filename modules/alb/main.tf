@@ -3,74 +3,45 @@ resource "aws_lb" "this" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = var.public_subnet_ids
+  subnets            = var.subnets
 
   enable_deletion_protection = false
+  idle_timeout               = 60
 
-  tags = {
-    Name = "${var.name_prefix}-alb"
-  }
-}
-
-resource "aws_security_group" "alb" {
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.name_prefix}-alb-sg"
-  }
+  tags = merge(var.tags, {
+    Name = "${var.name_prefix}-ALB"
+  })
 }
 
 resource "aws_lb_target_group" "web" {
-  name     = "${var.name_prefix}-tg-web"
+  name     = "${var.name_prefix}-web-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
-    interval            = 30
     path                = "/"
-    protocol            = "HTTP"
+    interval            = 30
     timeout             = 5
     healthy_threshold   = 5
     unhealthy_threshold = 2
-  }
-
-  tags = {
-    Name = "${var.name_prefix}-tg-web"
+    matcher             = "200"
   }
 }
 
 resource "aws_lb_target_group" "app" {
-  name     = "${var.name_prefix}-tg-app"
+  name     = "${var.name_prefix}-app-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
-    interval            = 30
     path                = "/"
-    protocol            = "HTTP"
+    interval            = 30
     timeout             = 5
     healthy_threshold   = 5
     unhealthy_threshold = 2
-  }
-
-  tags = {
-    Name = "${var.name_prefix}-tg-app"
+    matcher             = "200"
   }
 }
 
@@ -85,20 +56,45 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "web" {
-  count            = length(var.web_instance_ids)
-  target_group_arn = aws_lb_target_group.web.arn
-  target_id        = element(var.web_instance_ids, count.index)
-  port             = 80
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.this.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.web.arn
+  }
 }
 
-resource "aws_lb_target_group_attachment" "app" {
-  count            = length(var.app_instance_ids)
-  target_group_arn = aws_lb_target_group.app.arn
-  target_id        = element(var.app_instance_ids, count.index)
-  port             = 80
-}
+resource "aws_security_group" "alb" {
+  name_prefix = "${var.name_prefix}-alb-sg"
+  vpc_id      = var.vpc_id
 
-output "alb_dns_name" {
-  value = aws_lb.this.dns_name
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.name_prefix}-ALB-SG"
+  })
 }
