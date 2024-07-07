@@ -72,13 +72,13 @@ variable "tags" {
 variable "app_instance_count" {
   description = "생성할 앱 서버 EC2 인스턴스 수"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "web_instance_count" {
   description = "생성할 웹 서버 EC2 인스턴스 수"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "iam_instance_profile" {
