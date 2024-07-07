@@ -1,14 +1,14 @@
 variable "domain_name" {
-  description = "Domain name"
+  description = "도메인 이름"
   type        = string
 }
 
-variable "elb_dns_name" {
-  description = "DNS name of the ELB"
+variable "alb_dns_name" {
+  description = "ALB의 DNS 이름"
   type        = string
 }
 
-variable "elb_zone_id" {
-  description = "Zone ID of the ELB"
+variable "alb_zone_id" {
+  description = "ALB의 호스팅 영역 ID"
   type        = string
 }
