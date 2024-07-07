@@ -129,13 +129,13 @@ variable "tags" {
 variable "app_instance_count" {
   description = "생성할 앱 서버 EC2 인스턴스 수"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "web_instance_count" {
   description = "생성할 웹 서버 EC2 인스턴스 수"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "domain_name" {
@@ -221,10 +221,10 @@ variable "managed_rules" {
   ]
 }
 
-variable "origin_domain_name" {
-  description = "CloudFront 오리진 도메인 이름"
-  type        = string
-}
+# variable "origin_domain_name" {
+#   description = "CloudFront 오리진 도메인 이름"
+#   type        = string
+# }
 
 variable "origin_id" {
   description = "origin_id"
@@ -236,4 +236,20 @@ variable "target_origin_id" {
   description = "target_origin_id"
   type        = string
   default     = "value"
+}
+
+variable "certificate_arn" {
+  description = "SSL 인증서의 ARN"
+  type        = string
+}
+
+# variable "route53_zone_id" {
+#   description = "도메인의 Route53 호스티드 존 ID"
+#   type        = string
+# }
+
+variable "ttl" {
+  description = "ttl"
+  type        = number
+  default     = 1800
 }

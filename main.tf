@@ -4,6 +4,10 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_route53_zone" "selected" {
+  name = var.domain_name
+}
+
 module "vpc" {
   source = "./modules/vpc"
 
@@ -37,41 +41,63 @@ module "ec2" {
   web_instance_count          = var.web_instance_count
 }
 
-resource "aws_iam_role" "ssm_role" {
-  name = "${var.name_prefix}-ssm-role"
+# resource "aws_iam_role" "ssm_role" {
+#   name = "${var.name_prefix}-ssm-role"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = "sts:AssumeRole"
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "ec2.amazonaws.com"
+#         }
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "ssm_attach" {
+#   role       = aws_iam_role.ssm_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# }
+
+# resource "aws_iam_instance_profile" "ssm_profile" {
+#   name = "${var.name_prefix}-ssm-profile"
+#   role = aws_iam_role.ssm_role.name
+# }
+
+module "acm" {
+  source = "./modules/acm"
+
+  domain_name     = var.domain_name
+  # route53_zone_id = data.aws_route53_zone.selected.zone_id
+  ttl             = var.ttl
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_attach" {
-  role       = aws_iam_role.ssm_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# ACM 인증서 ARN을 자동으로 가져오기 위한 데이터 소스 정의
+# 이 데이터 소스는 특정 도메인의 발급된 인증서를 조회하여 ARN을 반환합니다.
+  data "aws_acm_certificate" "selected" {
+    domain   = var.domain_name
+    statuses = ["ISSUED"]
 }
 
-resource "aws_iam_instance_profile" "ssm_profile" {
-  name = "${var.name_prefix}-ssm-profile"
-  role = aws_iam_role.ssm_role.name
+module "route53" {
+  source         = "./modules/route53"
+  domain_name    = var.domain_name
+  alb_dns_name   = module.alb.alb_dns_name
+  alb_zone_id    = module.alb.alb_zone_id
 }
+
 
 module "alb" {
-  source = "./modules/alb"
-
-  name_prefix       = var.name_prefix
-  vpc_id            = module.vpc.vpc_id
-  public_subnet_ids = module.vpc.public_subnet_ids
-  web_instance_ids  = module.ec2.web_instance_ids
-  app_instance_ids  = module.ec2.app_instance_ids
+  source          = "./modules/alb"
+  name_prefix     = var.name_prefix
+  vpc_id          = module.vpc.vpc_id
+  subnets         = module.vpc.public_subnet_ids
+  certificate_arn = data.aws_acm_certificate.selected.arn # 올바르게 ARN을 참조
+  tags            = var.tags
 }
 
 
@@ -129,20 +155,4 @@ module "alb" {
 #     Environment = "Production"
 #     Project     = "BootGenie"
 #   }
-# }
-
-# module "elb" {
-#   source = "./modules/elb"
-  
-#   vpc_id = module.vpc.vpc_id
-#   public_subnet_ids = module.vpc.public_subnet_ids
-#   web_instance_ids = module.ec2.web_instance_ids
-# }
-
-# module "route53" {
-#   source = "./modules/route53"
-  
-#   domain_name = var.domain_name
-#   elb_dns_name = module.elb.elb_dns_name
-#   elb_zone_id = module.elb.elb_zone_id
 # }
