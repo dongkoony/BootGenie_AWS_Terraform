@@ -1,9 +1,5 @@
 # ./modules/ec2/main.tf
 
-# locals {
-#   app_instances = { for i in range(var.app_instance_count) : "app_${i}" => { name = "${var.name_prefix}-APP-Instance-#${i + 1}" } }
-#   web_instances = { for i in range(var.web_instance_count) : "web_${i}" => { name = "${var.name_prefix}-WEB-Instance-#${i + 1}" } }
-# }
 
 # Launch Template for App Servers
 resource "aws_launch_template" "app" {
