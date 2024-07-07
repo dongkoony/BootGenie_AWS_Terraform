@@ -6,12 +6,6 @@ variable "domain_name" {
   default     = "value"
 }
 
-variable "route53_zone_id" {
-  description = "도메인의 Route53 호스티드 존 ID"
-  type        = string
-  default     = "value"
-}
-
 variable "ttl" {
   description = "ttl"
   type        = number
