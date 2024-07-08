@@ -1,11 +1,24 @@
 # main.tf
 
 provider "aws" {
-  region = var.region
+  region = local.region
 }
 
+locals {
+  region = "ap-northeast-2"
+  domain_name = "donghyeonporfol.site"
+}
+
+# Route 53 호스팅 영역 생성
+resource "aws_route53_zone" "main" {
+  name = local.domain_name
+}
+
+# Route 53 호스팅 영역 ID 가져오기
 data "aws_route53_zone" "selected" {
-  name = var.domain_name
+  name         = local.domain_name
+  private_zone = false
+  depends_on   = [aws_route53_zone.main]
 }
 
 module "vpc" {
@@ -68,37 +81,42 @@ module "ec2" {
 #   role = aws_iam_role.ssm_role.name
 # }
 
+# ACM 인증서 생성 및 검증
 module "acm" {
   source = "./modules/acm"
-
-  domain_name     = var.domain_name
-  # route53_zone_id = data.aws_route53_zone.selected.zone_id
+  domain_name     = local.domain_name
+  route53_zone_id = data.aws_route53_zone.selected.zone_id
   ttl             = var.ttl
+  depends_on      = [aws_route53_zone.main]
 }
 
 # ACM 인증서 ARN을 자동으로 가져오기 위한 데이터 소스 정의
-# 이 데이터 소스는 특정 도메인의 발급된 인증서를 조회하여 ARN을 반환합니다.
-  data "aws_acm_certificate" "selected" {
-    domain   = var.domain_name
-    statuses = ["ISSUED"]
+data "aws_acm_certificate" "selected" {
+  domain   = local.domain_name
+  statuses = ["ISSUED"]
+  depends_on = [module.acm]
 }
 
+# Route 53 레코드 생성
 module "route53" {
   source         = "./modules/route53"
-  domain_name    = var.domain_name
+  domain_name    = local.domain_name
   alb_dns_name   = module.alb.alb_dns_name
   alb_zone_id    = module.alb.alb_zone_id
+  depends_on     = [module.alb]
 }
 
-
+# ALB 생성
 module "alb" {
   source          = "./modules/alb"
   name_prefix     = var.name_prefix
   vpc_id          = module.vpc.vpc_id
   subnets         = module.vpc.public_subnet_ids
-  certificate_arn = data.aws_acm_certificate.selected.arn # 올바르게 ARN을 참조
+  certificate_arn = data.aws_acm_certificate.selected.arn
   tags            = var.tags
+  depends_on      = [module.acm]
 }
+
 
 
 ## <-------------------------------WAFv2 테스트 중------------------------------->
