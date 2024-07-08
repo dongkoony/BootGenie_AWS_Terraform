@@ -1,10 +1,5 @@
 # ./modules/acm/main.tf
 
-# 데이터 소스: Route 53 호스팅 영역의 ID를 가져옵니다.
-data "aws_route53_zone" "selected" {
-  name = var.domain_name
-}
-
 # 리소스: ACM 인증서를 생성합니다.
 resource "aws_acm_certificate" "cert" {
   domain_name       = var.domain_name
@@ -27,7 +22,7 @@ resource "aws_route53_record" "cert_validation" {
   }
 
   # 가져온 호스팅 영역의 ID를 사용합니다.
-  zone_id = data.aws_route53_zone.selected.zone_id
+  zone_id = var.route53_zone_id
 
   # 각 검증 옵션의 이름, 타입, 값을 설정합니다.
   name    = each.value.name
@@ -45,4 +40,9 @@ resource "aws_acm_certificate_validation" "cert_validation" {
 
   # 검증 레코드의 FQDN을 사용하여 검증을 완료합니다.
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+}
+
+# 출력: ACM 인증서의 ARN을 출력합니다.
+output "acm_certificate_arn" {
+  value = aws_acm_certificate.cert.arn
 }
