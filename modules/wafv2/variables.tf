@@ -1,83 +1,37 @@
 # ./modules/wafv2/variables.tf
 
+# WAF 자원 접두사 변수
 variable "waf_prefix" {
-  type    = string
-  default = "Boot-Genie-cloudfront" # WAF prefix 이름 설정
+  description = "WAF 리소스의 접두사"
+  type        = string
 }
 
+# WAF IP 세트 목록 변수
 variable "waf_ip_sets" {
-  type    = list(string)
-  default = ["0.0.0.0/1", "128.0.0.0/1"] # 모든 IP 주소 허용
-}
-
-variable "ip_sets_rule" {
-  type = list(object({
-    name           = string
-    priority       = number
-    ip_set_arn     = string
-    action         = string
-  }))
-  description = "특정 IP 주소 또는 주소 범위에서 오는 웹 요청을 탐지하기 위한 규칙."
-  default     = []
-}
-
-variable "managed_rules" {
-  description = "AWS 관리형 WAF 규칙 목록."
+  description = "IP 세트 목록"
   type        = list(object({
-    name            = string
-    priority        = number
-    override_action = string
-    excluded_rules  = list(string)
+    name      = string  # IP 세트 이름
+    addresses = list(string)  # IP 주소 목록
   }))
-  default = [
-    {
-      name            = "AWSManagedRulesAdminProtectionRuleSet"
-      priority        = 10
-      override_action = "none"
-      excluded_rules  = []
-    },
-    {
-      name            = "AWSManagedRulesAmazonIpReputationList"
-      priority        = 20
-      override_action = "none"
-      excluded_rules  = []
-    },
-    {
-      name            = "AWSManagedRulesSQLiRuleSet"
-      priority        = 30
-      override_action = "none"
-      excluded_rules  = []
-    },
-    {
-      name            = "AWSManagedRulesKnownBadInputsRuleSet"
-      priority        = 40
-      override_action = "none"
-      excluded_rules  = []
-    },
-    {
-      name            = "AWSManagedRulesCommonRuleSet"
-      priority        = 50
-      override_action = "none"
-      excluded_rules  = []
-    }
-  ]
 }
 
+# 관리형 규칙 목록 변수
+variable "managed_rules" {
+  description = "관리형 규칙 목록"
+  type        = list(object({
+    name   = string  # 규칙 이름
+    vendor = string  # 규칙 공급자
+  }))
+}
 
-variable "domain_name" {
-  description = "실제 오리진 도메인"
+# 환경 변수
+variable "environment" {
+  description = "환경 (예: Production, Staging)"
   type        = string
-  default     = "value"
 }
 
-variable "origin_id" {
-  description = "origin_id"
-  type        = string    
-  default     = "value"
-}
-
-variable "target_origin_id" {
-  description = "target_origin_id"
+# 프로젝트 변수
+variable "project" {
+  description = "프로젝트 이름"
   type        = string
-  default     = "value"
 }
