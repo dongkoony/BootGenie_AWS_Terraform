@@ -13,3 +13,8 @@ variable "alb_zone_id" {
   description = "ALB의 호스팅 영역 ID"
   type        = string
 }
+
+variable "route53_zone_id" {
+  description = "The ID of the Route53 hosted zone"
+  type        = string
+}
