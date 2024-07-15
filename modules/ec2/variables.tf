@@ -95,13 +95,13 @@ variable "availability_zones" {
 variable "app_asg_max_siz" {
   description = "asg_max_siz"
   type        = number
-  default     = 4
+  default     = 2
 }
 
 variable "web_asg_max_siz" {
   description = "asg_max_siz"
   type        = number
-  default     = 4
+  default     = 2
 }
 
 variable "app_asg_min_siz" {
