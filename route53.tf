@@ -36,5 +36,20 @@ resource "aws_route53_record" "www" {
   name    = "www.${local.domain_name}"
   type    = "A"
   ttl     = 300
-  records = ["123.123.123.123"] # ALB DNS 이름 대신 임시 IP 주소 사용
+
+  alias {
+    name                   = module.alb.alb_dns_name
+    zone_id                = module.alb.alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# Route 53 모듈 호출 수정
+module "route53" {
+  source         = "./modules/route53"
+  domain_name    = local.domain_name
+  alb_dns_name   = module.alb.alb_dns_name
+  alb_zone_id    = module.alb.alb_zone_id
+  route53_zone_id = data.aws_route53_zone.main.zone_id
+  depends_on     = [module.alb]
 }
