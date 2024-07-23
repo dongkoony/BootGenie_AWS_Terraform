@@ -47,6 +47,9 @@ module "ec2" {
 
   app_instance_count          = var.app_instance_count
   web_instance_count          = var.web_instance_count
+
+  alb_target_group_arn_web    = module.alb.alb_target_group_web_arn
+  alb_target_group_arn_app    = module.alb.alb_target_group_app_arn
 }
 
 
@@ -54,9 +57,9 @@ module "ec2" {
 module "acm" {
   source = "./modules/acm"
   domain_name     = var.domain_name
-  route53_zone_id = aws_route53_zone.main.zone_id  # 여기를 수정
+  route53_zone_id = data.aws_route53_zone.main.zone_id  # 여기를 수정
   ttl             = var.ttl
-  depends_on      = [aws_route53_zone.main]  # 여기에 ns 레코드 의존성 추가
+  depends_on      = [data.aws_route53_zone.main, aws_route53_record.ns]  # 여기에 ns 레코드 의존성 추가
 }
 
 # ACM 인증서 ARN을 자동으로 가져오기 위한 데이터 소스 정의
@@ -66,15 +69,6 @@ data "aws_acm_certificate" "selected" {
   depends_on = [module.acm]
 }
 
-# Route 53 모듈 호출 수정
-# module "route53" {
-#   source         = "./modules/route53"
-#   domain_name    = local.domain_name
-#   alb_dns_name   = module.alb.alb_dns_name
-#   alb_zone_id    = module.alb.alb_zone_id
-#   route53_zone_id = aws_route53_zone.main.zone_id
-#   depends_on     = [module.alb, aws_route53_zone.main, aws_route53_record.ns]
-# }
 
 # ALB 생성
 module "alb" {
