@@ -43,7 +43,7 @@ resource "aws_instance" "jenkins_master" {
   user_data = data.local_file.user_data_script.content
 
   tags = {
-    Name = "Jenkins-Master-instance"
+    Name = "Jenkins-Master-instance-#0"
   }
 
   lifecycle {
