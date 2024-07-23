@@ -64,11 +64,6 @@ variable "tags" {
   default     = {}
 }
 
-# variable "availability_zone" {
-#   description = "AZ"
-#   type        = string
-# }
-
 variable "app_instance_count" {
   description = "생성할 앱 서버 EC2 인스턴스 수"
   type        = number
@@ -93,25 +88,35 @@ variable "availability_zones" {
 }
 
 variable "app_asg_max_siz" {
-  description = "asg_max_siz"
+  description = "앱 서버의 ASG 최대 크기"
   type        = number
   default     = 2
 }
 
 variable "web_asg_max_siz" {
-  description = "asg_max_siz"
+  description = "웹 서버의 ASG 최대 크기"
   type        = number
   default     = 2
 }
 
 variable "app_asg_min_siz" {
-  description = "asg_min_siz"
+  description = "앱 서버의 ASG 최소 크기"
   type        = number
   default     = 1
 }
 
 variable "web_asg_min_siz" {
-  description = "asg_min_siz"
+  description = "웹 서버의 ASG 최소 크기"
   type        = number
   default     = 1
+}
+
+variable "alb_target_group_arn_web" {
+  description = "웹 인스턴스를 위한 ALB 대상 그룹 ARN"
+  type        = string
+}
+
+variable "alb_target_group_arn_app" {
+  description = "앱 인스턴스를 위한 ALB 대상 그룹 ARN"
+  type        = string
 }

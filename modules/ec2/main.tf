@@ -47,6 +47,8 @@ resource "aws_autoscaling_group" "app" {
     version = "$Latest"
   }
 
+  target_group_arns = [var.alb_target_group_arn_app]  # 대상 그룹 ARN 추가
+
   tag {
     key                 = "Name"
     value               = "${var.name_prefix}-APP-Instance"
@@ -99,6 +101,8 @@ resource "aws_autoscaling_group" "web" {
     id      = aws_launch_template.web.id
     version = "$Latest"
   }
+
+  target_group_arns = [var.alb_target_group_arn_web]  # 대상 그룹 ARN 추가
 
   tag {
     key                 = "Name"
