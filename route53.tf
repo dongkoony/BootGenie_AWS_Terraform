@@ -16,12 +16,7 @@ resource "aws_route53_record" "ns" {
   type    = "NS"
   ttl     = 172800
 
-  records = [
-    "ns-1361.awsdns-42.org.",
-    "ns-1882.awsdns-43.co.uk.",
-    "ns-405.awsdns-50.com.",
-    "ns-669.awsdns-19.net."
-  ]
+  records = var.ns_records
   allow_overwrite = true  # 레코드 덮어쓰기 허용
 
   lifecycle {
@@ -31,25 +26,25 @@ resource "aws_route53_record" "ns" {
 }
 
 # A 레코드 설정 (www 서브도메인)
-resource "aws_route53_record" "www" {
-  zone_id = data.aws_route53_zone.main.zone_id
-  name    = "www.${local.domain_name}"
-  type    = "A"
-  ttl     = 300
+# resource "aws_route53_record" "www" {
+#   zone_id = data.aws_route53_zone.main.zone_id
+#   name    = "www.${local.domain_name}"
+#   type    = "A"
 
-  alias {
-    name                   = module.alb.alb_dns_name
-    zone_id                = module.alb.alb_zone_id
-    evaluate_target_health = true
-  }
-}
+#   alias {
+#     name                   = module.alb.alb_dns_name
+#     zone_id                = module.alb.alb_zone_id
+#     evaluate_target_health = true
+#   }
+#   allow_overwrite = true  # 레코드 덮어쓰기 허용
+# }
 
 # Route 53 모듈 호출 수정
 module "route53" {
-  source         = "./modules/route53"
-  domain_name    = local.domain_name
-  alb_dns_name   = module.alb.alb_dns_name
-  alb_zone_id    = module.alb.alb_zone_id
+  source          = "./modules/route53"
+  domain_name     = local.domain_name
+  alb_dns_name    = module.alb.alb_dns_name
+  alb_zone_id     = module.alb.alb_zone_id
   route53_zone_id = data.aws_route53_zone.main.zone_id
-  depends_on     = [module.alb]
+  depends_on      = [module.alb]
 }
