@@ -29,16 +29,18 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # 현재 사용자를 docker 그룹에 추가
 usermod -aG docker ubuntu
-newgrp docker
+
+# Docker 소켓 권한 설정
+sudo chmod 666 /var/run/docker.sock
 
 # Docker Swarm 초기화 (첫 번째 노드에서만 실행)
 if ! docker info | grep -q "Swarm: active"; then
-    docker swarm init
+    sudo docker swarm init
     echo "Docker Swarm initialized"
 else
     echo "Docker Swarm is already active"
 fi
-d
+
 # Jenkins 서비스 생성
 docker service create \
     --name jenkins \
