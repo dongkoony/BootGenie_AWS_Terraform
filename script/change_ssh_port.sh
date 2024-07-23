@@ -39,7 +39,7 @@ docker swarm init
 # Docker Compose 파일을 위한 디렉토리 생성
 mkdir -p /home/ubuntu/docker-app
 
-# Apache 컨테이너용 Docker Compose
+# Apache 컨테이너용 Docker Compose 파일 예제
 cat <<EOL > /home/ubuntu/docker-app/docker-compose.yml
 version: '3.3'
 
@@ -52,6 +52,7 @@ services:
     volumes:
       - /home/ubuntu/docker-app/html:/usr/local/apache2/htdocs
       - /home/ubuntu/docker-app/conf:/usr/local/apache2/conf
+    command: ["/usr/local/apache2/bin/httpd", "-D", "FOREGROUND", "-f", "/usr/local/apache2/conf/httpd.conf"]
 EOL
 
 # Apache 설정 파일을 위한 디렉토리 생성
