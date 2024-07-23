@@ -1,3 +1,5 @@
+# ./modules/alb/main.tf
+
 resource "aws_lb" "this" {
   name               = "${var.name_prefix}-alb"
   internal           = false

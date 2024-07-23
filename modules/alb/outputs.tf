@@ -57,3 +57,13 @@ output "alb_http_listener_port" {
   description = "HTTP 리스너의 포트"
   value       = 80
 }
+
+output "alb_target_group_web_arn" {
+  description = "The ARN of the ALB target group for web instances"
+  value       = aws_lb_target_group.web.arn
+}
+
+output "alb_target_group_app_arn" {
+  description = "The ARN of the ALB target group for app instances"
+  value       = aws_lb_target_group.app.arn
+}
