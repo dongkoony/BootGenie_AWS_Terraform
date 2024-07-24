@@ -37,7 +37,7 @@ resource "aws_instance" "jenkins_master" {
   subnet_id     = element(module.vpc.public_subnet_ids, 0)
   key_name      = var.key_name
   iam_instance_profile = aws_iam_instance_profile.jenkins_ssm_instance_profile.name
-
+  
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
   user_data = data.local_file.user_data_script.content
@@ -66,6 +66,7 @@ resource "aws_instance" "jenkins_master" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /home/ubuntu/get_jenkins_password.sh",
+      "while [ ! -f /home/ubuntu/docker_installed ]; do sleep 10; done",  # Docker 설치 완료 대기
       "sleep 120",  # Jenkins 초기화 대기 시간
       "/home/ubuntu/get_jenkins_password.sh"
     ]
@@ -98,6 +99,13 @@ resource "aws_security_group" "jenkins_sg" {
     from_port   = 1717
     to_port     = 1717
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
