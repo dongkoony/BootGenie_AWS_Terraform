@@ -170,3 +170,24 @@ variable "ns_records" {
   description = "List of NS records"
   type        = list(string)
 }
+
+##############################################
+## Jenkins EC2 Script Variables Start
+##############################################
+variable "cert_email" {
+  description = "The email address for certificate registration"
+  type        = string
+}
+
+variable "jenkins_domain_name" {
+  description = "The domain name for the service"
+  type        = string
+}
+
+variable "project_root_path" {
+  description = "Root path of the project"
+  type        = string
+}
+##############################################
+## Jenkins EC2 Script Variables End
+##############################################

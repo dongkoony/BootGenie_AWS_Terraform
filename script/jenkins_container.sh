@@ -1,6 +1,11 @@
 #!/bin/bash
 
 LOG_FILE="/home/ubuntu/docker_install.log"
+PEM_KEY_PATH=$(terraform output -raw public_key_path)
+PROJECT_ROOT=$(terraform output -raw project_root_path)
+CERT_EMAIL=$(terraform output -raw cert_email)
+DOMAIN_NAME=$(terraform output -raw jenkins_domain_name)
+EC2_PUBLIC_IP=$(terraform output -raw jenkins_master_public_ip)
 
 echo "시작: $(date)" > $LOG_FILE
 
@@ -14,6 +19,7 @@ echo "SSH 포트 변경 완료" >> $LOG_FILE
 echo "방화벽 설정 시작" >> $LOG_FILE
 ufw allow 1717/tcp  # ssh
 ufw allow 11117/tcp # jenkins
+ufw allow 80/tcp    # HTTP
 ufw allow 443/tcp   # HTTPS
 ufw allow 2377/tcp  # Docker Swarm 클러스터 관리
 ufw allow 7946/tcp  # Docker Swarm 노드 간 통신
@@ -50,7 +56,8 @@ source /home/ubuntu/.bashrc
 # Docker 브리지 네트워크 설정 변경
 cat <<EOL > /etc/docker/daemon.json
 {
-    "bip": "172.18.0.1/16"
+    "bip": "172.18.0.1/16",
+    "dns": ["8.8.8.8", "8.8.4.4"]
 }
 EOL
 
@@ -83,23 +90,43 @@ else
     echo "Docker Swarm is already active" >> $LOG_FILE
 fi
 
+# 로컬에서 EC2로 docker-compose.yaml 파일 전송
+scp -i $PEM_KEY_PATH ${PROJECT_ROOT}/docker-compose.yaml ubuntu@$EC2_PUBLIC_IP:/home/ubuntu/docker-compose.yaml
+
+# docker-compose 실행
+docker stack deploy -c /home/ubuntu/docker-compose.yaml jenkins
+if [ $? -ne 0 ]; then
+    echo "docker-compose 실행 실패" >> $LOG_FILE
+    exit 1
+else
+    echo "docker-compose로 Jenkins 및 Traefik 서비스 생성 완료" >> $LOG_FILE
+fi
+
+###################################
+###docker compose testing
+###################################
+
 # Jenkins 서비스 생성
-docker service create \
-    --name jenkins \
-    --publish 11117:8080 \
-    --mount type=volume,source=jenkins-data,target=/var/jenkins_home \
-    jenkins/jenkins:latest-jdk17
-echo "Jenkins 서비스 생성 완료" >> $LOG_FILE
+# docker service create \
+#     --name jenkins \
+#     --publish 11117:8080 \
+#     --mount type=volume,source=jenkins-data,target=/var/jenkins_home \
+#     jenkins/jenkins:latest-jdk17
+# echo "Jenkins 서비스 생성 완료" >> $LOG_FILE
 
 # Jenkins 설정 파일 수정
-sleep 30  # Jenkins가 충분히 시작될 때까지 대기
-CONTAINER_ID=$(docker ps --filter name=jenkins --format "{{.ID}}" | head -n1)
-docker exec $CONTAINER_ID sed -i 's/https:\/\/updates.jenkins.io/http:\/\/updates.jenkins.io/g' /var/jenkins_home/hudson.model.UpdateCenter.xml
-echo "Jenkins 설정 파일 수정 완료" >> $LOG_FILE
+# sleep 30  # Jenkins가 충분히 시작될 때까지 대기
+# CONTAINER_ID=$(docker ps --filter name=jenkins --format "{{.ID}}" | head -n1)
+# docker exec $CONTAINER_ID sed -i 's/https:\/\/updates.jenkins.io/http:\/\/updates.jenkins.io/g' /var/jenkins_home/hudson.model.UpdateCenter.xml
+# echo "Jenkins 설정 파일 수정 완료" >> $LOG_FILE
 
-# Jenkins 서비스 재시작
-docker restart $CONTAINER_ID
-echo "Jenkins 서비스 재시작 완료" >> $LOG_FILE
+# # Jenkins 서비스 재시작
+# docker restart $CONTAINER_ID
+# echo "Jenkins 서비스 재시작 완료" >> $LOG_FILE
+
+###################################
+###docker compose testing
+###################################
 
 # Docker 설치가 완료되었음을 표시하는 파일 생성
 touch /home/ubuntu/docker_installed
