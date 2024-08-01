@@ -1,12 +1,12 @@
 #!/bin/bash
 
-LOG_FILE="/home/ubuntu/docker_install.log"
-PEM_KEY_PATH=$(terraform output -raw public_key_path)
-PROJECT_ROOT=$(terraform output -raw project_root_path)
-CERT_EMAIL=$(terraform output -raw cert_email)
-DOMAIN_NAME=$(terraform output -raw jenkins_domain_name)
-EC2_PUBLIC_IP=$(terraform output -raw jenkins_master_public_ip)
+# 환경 변수 로드
+source ${PROJECT_ROOT}/.env
 
+# 필요한 환경 변수 설정
+LOG_FILE="/home/ubuntu/docker_install.log"
+
+# Script 시작
 echo "시작: $(date)" > $LOG_FILE
 
 # SSH 포트 변경
@@ -91,7 +91,7 @@ else
 fi
 
 # 로컬에서 EC2로 docker-compose.yaml 파일 전송
-scp -i $PEM_KEY_PATH ${PROJECT_ROOT}/docker-compose.yaml ubuntu@$EC2_PUBLIC_IP:/home/ubuntu/docker-compose.yaml
+# scp -i $PEM_KEY_PATH ${PROJECT_ROOT}/docker-compose.yaml ubuntu@$EC2_PUBLIC_IP:/home/ubuntu/docker-compose.yaml
 
 # docker-compose 실행
 docker stack deploy -c /home/ubuntu/docker-compose.yaml jenkins

@@ -58,6 +58,19 @@ resource "aws_instance" "jenkins_master" {
     port        = 1717
   }
 
+# Dokcer-Compose.yaml 파일을 복사하여 EC2 인스턴스에 업로드
+  provisioner "file" {
+    source      = "./docker-compose.yaml"
+    destination = "/home/ubuntu/docker-compose.yaml"
+  }
+
+# Dokcer-Compose.yaml 환경변수 파일을 복사하여 EC2 인스턴스에 업로드
+  provisioner "file" {
+    source      = "./.env"
+    destination = "/home/ubuntu/.env"
+  }
+
+# get_jenkins_password.sh 파일을 복사하여 EC2 인스턴스에 업로드
   provisioner "file" {
     source      = "script/get_jenkins_password.sh"
     destination = "/home/ubuntu/get_jenkins_password.sh"
@@ -95,12 +108,22 @@ resource "aws_security_group" "jenkins_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+# Jenkins Port
   ingress {
     from_port   = 11117
     to_port     = 11117
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+# Traefik Port
+  ingress {
+    from_port   = 11118
+    to_port     = 11118
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 
   ingress {
     from_port   = 1717
@@ -118,13 +141,13 @@ resource "aws_security_group" "jenkins_sg" {
 }
 
 data "aws_route53_zone" "jenkins" {
-  name         = var.domain_name
+  name         = var.jenkins_domain_name
   private_zone = false
 }
 
 resource "aws_route53_record" "jenkins" {
   zone_id = data.aws_route53_zone.jenkins.zone_id
-  name    = "jenkins.${var.domain_name}"
+  name    = "jenkins.${var.jenkins_domain_name}"
   type    = "A"
   ttl     = 300
   records = [aws_instance.jenkins_master.public_ip]
