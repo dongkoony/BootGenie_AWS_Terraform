@@ -43,3 +43,4 @@ terraform.rc
 
 initial_password.txt
 jenkins_initial_password.txt
+.env
