@@ -22,3 +22,9 @@ variable "tags" {
   description = "리소스에 적용할 태그"
   type        = map(string)
 }
+
+variable "jenkins_domain" {
+  description = "Domain for Jenkins"
+  type        = string
+  default     = "jenkins.boot-genie-test.click"
+}
