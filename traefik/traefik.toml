@@ -1,0 +1,39 @@
+[log]
+  level = "INFO"
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+    [entryPoints.web.forwardingTimeouts]
+      dialTimeout = "30s"
+      responseHeaderTimeout = "30s"
+      idleConnTimeout = "30s"
+
+[providers]
+  [providers.docker]
+    endpoint = "unix:///var/run/docker.sock"
+    swarmMode = true
+    network = "jenkins_jenkins-overlay-network"
+    exposedByDefault = false
+[api]
+  insecure = true
+
+[http.middlewares]
+  [http.middlewares.jenkins-headers.headers]
+    customRequestHeaders = { X-Forwarded-Proto = "http", X-Forwarded-Port = "80", X-Real-IP = "client" }
+
+[http.routers]
+  [http.routers.jenkins]
+    rule = "Host(`jenkins.boot-genie-test.click`)"
+    service = "jenkins"
+    entryPoints = ["web"]
+    middlewares = ["jenkins-headers"]
+
+[http.services]
+  [http.services.jenkins.loadBalancer]
+    [[http.services.jenkins.loadBalancer.servers]]
+      url = "http://jenkins:8080"
+    [http.services.jenkins.loadBalancer.responseForwarding]
+      flushInterval = "100ms"
+    [http.services.jenkins.loadBalancer.server]
+      forwardingTimeouts = { dialTimeout = "30s", responseHeaderTimeout = "30s", idleConnTimeout = "30s" }
