@@ -76,6 +76,24 @@ resource "aws_instance" "jenkins_master" {
     destination = "/home/ubuntu/get_jenkins_password.sh"
   }
 
+  provisioner "local-exec" {
+    command = "zip -r traefik.zip ./traefik"
+  }
+
+  provisioner "file" {
+    source      = "traefik.zip"
+    destination = "/home/ubuntu/traefik.zip"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update && sudo apt-get install -y unzip",  # unzip 설치 추가
+      "unzip /home/ubuntu/traefik.zip -d /home/ubuntu/",
+      "rm /home/ubuntu/traefik.zip"
+    ]
+  }
+
+
   provisioner "remote-exec" {
     inline = [
       "chmod +x /home/ubuntu/get_jenkins_password.sh",
@@ -117,8 +135,8 @@ resource "aws_security_group" "jenkins_sg" {
 
 # Jenkins Port
   ingress {
-    from_port   = 11117
-    to_port     = 11117
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
