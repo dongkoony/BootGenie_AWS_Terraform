@@ -22,7 +22,7 @@
     [[http.services.grafana.loadBalancer.servers]]
       url = "http://grafana:3000"
 
-[http.routers.jenkins]
+[http.routers]
   [http.routers.jenkins]
     rule = "Host(`jenkins.boot-genie-test.click`)"
     service = "jenkins"
