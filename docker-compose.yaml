@@ -8,11 +8,11 @@ services:
     image: traefik:v2.9
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/home/ubuntu/traefik/traefik.toml:/etc/traefik/traefik.toml:ro"
-    ports: # Traefik 대시보드
+      - "/home/ubuntu/traefik.toml:/etc/traefik/traefik.toml:ro"
+    ports:
       - "80:80"
       - "11118:8080"
-    environment: # 서울 시간
+    environment:
       - TZ=Asia/Seoul
     networks:
       - jenkins-overlay-network
@@ -24,7 +24,7 @@ services:
   jenkins:
     image: jenkins/jenkins:lts-jdk17
     ports:
-      - "8080:8080"  # Jenkins에 직접 접근할 수 있는 포트
+      - "8080:8080"
     volumes:
       - jenkins-data:/var/jenkins_home
     env_file:
@@ -42,6 +42,51 @@ services:
         - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
         - "traefik.http.routers.jenkins.service=jenkins"
 
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - TZ=Asia/Seoul
+    networks:
+      - jenkins-overlay-network
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.boot-genie-test.click`)"
+        - "traefik.docker.network=jenkins_jenkins-overlay-network"
+        - "traefik.http.routers.grafana.entrypoints=web"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    environment:
+      - TZ=Asia/Seoul
+    networks:
+      - jenkins-overlay-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    environment:
+      - TZ=Asia/Seoul
+    networks:
+      - jenkins-overlay-network
+
 networks:
   jenkins-overlay-network:
     driver: overlay
@@ -51,3 +96,5 @@ networks:
 
 volumes:
   jenkins-data:
+  grafana-storage:
+  prometheus-data:
