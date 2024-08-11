@@ -174,20 +174,108 @@ variable "ns_records" {
 ##############################################
 ## Jenkins EC2 Script Variables Start
 ##############################################
-variable "cert_email" {
-  description = "The email address for certificate registration"
-  type        = string
-}
-
 variable "jenkins_domain_name" {
   description = "The domain name for the service"
-  type        = string
-}
-
-variable "project_root_path" {
-  description = "Root path of the project"
   type        = string
 }
 ##############################################
 ## Jenkins EC2 Script Variables End
 ##############################################
+
+##############################################
+## Grafana EC2 Script Variables Start
+##############################################
+variable "grafana_domain_name" {
+  description = "The domain name for the service"
+  type        = string
+}
+##############################################
+## Grafana EC2 Script Variables End
+##############################################
+
+
+variable "security_group_rules" {
+  description = "Security group rules"
+  type = list(object({
+    type        = string
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+    description = string
+  }))
+  default = [
+    {
+      type        = "ingress"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "SSH"
+    },
+    {
+      type        = "ingress"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "HTTP"
+    },
+    {
+      type        = "ingress"
+      from_port   = 8080
+      to_port     = 8080
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Jenkins"
+    },
+    {
+      type        = "ingress"
+      from_port   = 11118
+      to_port     = 11118
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Traefik"
+    },
+    {
+      type        = "ingress"
+      from_port   = 1717
+      to_port     = 1717
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Custom SSH"
+    },
+    {
+      type        = "ingress"
+      from_port   = 3000
+      to_port     = 3000
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Grafana"
+    },
+    {
+      type        = "ingress"
+      from_port   = 9090
+      to_port     = 9090
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Prometheus"
+    },
+    {
+      type        = "ingress"
+      from_port   = 9100
+      to_port     = 9100
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Node Exporter"
+    },
+    {
+      type        = "egress"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow all outbound traffic"
+    }
+  ]
+}

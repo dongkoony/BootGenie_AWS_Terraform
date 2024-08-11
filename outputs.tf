@@ -29,14 +29,6 @@ output "public_key_path" {
   value = var.public_key_path
 }
 
-output "project_root_path" {
-  value = var.project_root_path
-}
-
-output "cert_email" {
-  value = var.cert_email
-}
-
 output "jenkins_domain_name" {
   value = var.jenkins_domain_name
 }

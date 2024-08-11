@@ -36,4 +36,4 @@ else
     echo "비밀번호가 $PASSWORD_FILE 파일에 저장되었습니다."
 fi
 
-echo "Jenkins UI는 http://$(curl -s ifconfig.me):11117 에서 접속 가능합니다."
+echo "Jenkins UI는 http://$(curl -s ifconfig.me):8080 에서 접속 가능합니다."

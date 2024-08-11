@@ -27,30 +27,10 @@ sudo sed -i 's/#Port 22/Port 1717/g' /etc/ssh/sshd_config >> $LOG_FILE 2>&1
 sudo systemctl restart sshd >> $LOG_FILE 2>&1
 echo "SSH 포트 변경 완료" >> $LOG_FILE 2>&1
 
-
-###################################################################################
-######## 방화벽 설정 (필요한 경우)
-###################################################################################
-# echo "방화벽 설정 시작" >> $LOG_FILE 2>&1
-# sudo ufw allow 1717/tcp >> $LOG_FILE 2>&1  # ssh
-# sudo ufw allow 11117/tcp >> $LOG_FILE 2>&1 # jenkins
-# sudo ufw allow 80/tcp >> $LOG_FILE 2>&1    # HTTP
-# sudo ufw allow 443/tcp >> $LOG_FILE 2>&1   # HTTPS
-# sudo ufw allow 2377/tcp >> $LOG_FILE 2>&1  # Docker Swarm 클러스터 관리
-# sudo ufw allow 7946/tcp >> $LOG_FILE 2>&1  # Docker Swarm 노드 간 통신
-# sudo ufw allow 7946/udp >> $LOG_FILE 2>&1  # Docker Swarm 노드 간 통신
-# sudo ufw allow 4789/udp >> $LOG_FILE 2>&1  # Docker Swarm 오버레이 네트워크
-# sudo ufw reload >> $LOG_FILE 2>&1
-# echo "방화벽 설정 완료" >> $LOG_FILE 2>&1
-###################################################################################
-######## 방화벽 설정 (필요한 경우)
-###################################################################################
-
-
 # Docker 및 JDK 17 설치
 echo "Docker 및 JDK 17 설치 시작" >> $LOG_FILE 2>&1
 sudo apt-get update >> $LOG_FILE 2>&1
-sudo apt-get install -y ca-certificates curl gnupg lsb-release openjdk-17-jdk >> $LOG_FILE 2>&1
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin >> $LOG_FILE 2>&1
 
 sudo mkdir -p /etc/apt/keyrings >> $LOG_FILE 2>&1
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg >> $LOG_FILE 2>&1
@@ -111,8 +91,8 @@ else
 fi
 
 
-# docker-compose 실행
-sudo docker stack deploy -c /home/ubuntu/docker-compose.yaml jenkins >> $LOG_FILE 2>&1
+# grafana-compose 실행
+sudo docker stack deploy -c /home/ubuntu/grafana-compose.yaml jenkins >> $LOG_FILE 2>&1
 if [ $? -ne 0 ]; then
     echo "docker-compose 실행 실패" >> $LOG_FILE 2>&1
     exit 1
