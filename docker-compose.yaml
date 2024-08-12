@@ -59,9 +59,13 @@ services:
         - "traefik.docker.network=jenkins_jenkins-overlay-network"
         - "traefik.http.routers.grafana.entrypoints=web"
         - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    depends_on:
+      - jenkins
 
   prometheus:
     image: prom/prometheus
+    ports:
+      - "9090:9090"
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
       - prometheus-data:/prometheus
@@ -74,6 +78,8 @@ services:
       - TZ=Asia/Seoul
     networks:
       - jenkins-overlay-network
+    depends_on:
+      - jenkins
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor
@@ -86,6 +92,8 @@ services:
       - TZ=Asia/Seoul
     networks:
       - jenkins-overlay-network
+    depends_on:
+      - jenkins
 
 networks:
   jenkins-overlay-network:
