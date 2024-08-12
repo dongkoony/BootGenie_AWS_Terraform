@@ -3,8 +3,8 @@
 PASSWORD_FILE="/home/ubuntu/jenkins_initial_password.txt"
 
 # Jenkins 컨테이너가 완전히 시작될 때까지 대기
-echo "Jenkins 서비스 시작 확인 중... (최대 5분 대기)"
-for i in {1..30}; do
+echo "Jenkins 서비스 시작 확인 중... (최대 10분 대기)"
+for i in {1..60}; do
     if docker ps --filter name=jenkins --format "{{.ID}}" | grep -q "."; then
         echo "Jenkins 서비스가 시작되었습니다."
         break
@@ -15,8 +15,8 @@ done
 # Jenkins 컨테이너 ID 찾기
 CONTAINER_ID=$(docker ps --filter name=jenkins --format "{{.ID}}" | head -n1)
 
-# 초기 관리자 비밀번호 추출 (최대 2분 대기)
-for i in {1..12}; do
+# 초기 관리자 비밀번호 추출 (최대 5분 대기)
+for i in {1..30}; do
     PASSWORD=$(docker exec $CONTAINER_ID cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null)
     if [ ! -z "$PASSWORD" ]; then
         break
