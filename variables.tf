@@ -231,6 +231,14 @@ variable "security_group_rules" {
     },
     {
       type        = "ingress"
+      from_port   = 7777
+      to_port     = 7777
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "cAdvisor"
+    },
+    {
+      type        = "ingress"
       from_port   = 11118
       to_port     = 11118
       protocol    = "tcp"
