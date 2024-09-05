@@ -38,21 +38,75 @@ resource "aws_launch_template" "app" {
 resource "aws_autoscaling_group" "app" {
   name                = "${var.name_prefix}-app-asg"
   vpc_zone_identifier = var.subnet_id
-  desired_capacity    = var.app_instance_count # 시작 시 원하는 인스턴스 수
-  min_size            = var.app_asg_min_siz # 최소 인스턴스 수
-  max_size            = var.app_asg_max_siz # 최대 인스턴스 수
+  desired_capacity    = var.app_instance_count
+  min_size            = var.app_asg_min_siz
+  max_size            = var.app_asg_max_siz
 
   launch_template {
     id      = aws_launch_template.app.id
     version = "$Latest"
   }
 
-  target_group_arns = [var.alb_target_group_arn_app]  # 대상 그룹 ARN 추가
+  target_group_arns = [var.alb_target_group_arn_app]
 
   tag {
     key                 = "Name"
     value               = "${var.name_prefix}-APP-Instance"
     propagate_at_launch = true
+  }
+}
+
+# App Server Scale Out Policy
+resource "aws_autoscaling_policy" "app_scale_out" {
+  name                   = "${var.name_prefix}-app-scale-out"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.app.name
+}
+
+# App Server Scale In Policy
+resource "aws_autoscaling_policy" "app_scale_in" {
+  name                   = "${var.name_prefix}-app-scale-in"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.app.name
+}
+
+# App Server CPU High Alarm
+resource "aws_cloudwatch_metric_alarm" "app_cpu_high" {
+  alarm_name          = "${var.name_prefix}-app-cpu-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "75"
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+  alarm_actions       = [aws_autoscaling_policy.app_scale_out.arn]
+  
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
+  }
+}
+
+# App Server CPU Low Alarm
+resource "aws_cloudwatch_metric_alarm" "app_cpu_low" {
+  alarm_name          = "${var.name_prefix}-app-cpu-low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "30"
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+  alarm_actions       = [aws_autoscaling_policy.app_scale_in.arn]
+  
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
   }
 }
 
@@ -102,12 +156,66 @@ resource "aws_autoscaling_group" "web" {
     version = "$Latest"
   }
 
-  target_group_arns = [var.alb_target_group_arn_web]  # 대상 그룹 ARN 추가
+  target_group_arns = [var.alb_target_group_arn_web]
 
   tag {
     key                 = "Name"
     value               = "${var.name_prefix}-WEB-Instance"
     propagate_at_launch = true
+  }
+}
+
+# Web Server Scale Out Policy
+resource "aws_autoscaling_policy" "web_scale_out" {
+  name                   = "${var.name_prefix}-web-scale-out"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.web.name
+}
+
+# Web Server Scale In Policy
+resource "aws_autoscaling_policy" "web_scale_in" {
+  name                   = "${var.name_prefix}-web-scale-in"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.web.name
+}
+
+# Web Server CPU High Alarm
+resource "aws_cloudwatch_metric_alarm" "web_cpu_high" {
+  alarm_name          = "${var.name_prefix}-web-cpu-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "70"
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+  alarm_actions       = [aws_autoscaling_policy.web_scale_out.arn]
+  
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.web.name
+  }
+}
+
+# Web Server CPU Low Alarm
+resource "aws_cloudwatch_metric_alarm" "web_cpu_low" {
+  alarm_name          = "${var.name_prefix}-web-cpu-low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "30"
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+  alarm_actions       = [aws_autoscaling_policy.web_scale_in.arn]
+  
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.web.name
   }
 }
 

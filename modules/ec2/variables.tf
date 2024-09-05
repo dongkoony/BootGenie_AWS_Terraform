@@ -90,13 +90,13 @@ variable "availability_zones" {
 variable "app_asg_max_siz" {
   description = "앱 서버의 ASG 최대 크기"
   type        = number
-  default     = 2
+  default     = 6
 }
 
 variable "web_asg_max_siz" {
   description = "웹 서버의 ASG 최대 크기"
   type        = number
-  default     = 2
+  default     = 6
 }
 
 variable "app_asg_min_siz" {
