@@ -102,13 +102,13 @@ variable "web_asg_max_siz" {
 variable "app_asg_min_siz" {
   description = "앱 서버의 ASG 최소 크기"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "web_asg_min_siz" {
   description = "웹 서버의 ASG 최소 크기"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "alb_target_group_arn_web" {
